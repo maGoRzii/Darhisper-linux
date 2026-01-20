@@ -78,46 +78,59 @@ class WaveView(NSView):
             line_path.setLineWidth_(0.5)
             line_path.stroke()
         else:
-            # Modo grabando: mostrar ondas animadas
-            # Fondo casi invisible para que solo se vean las ondas
-            NSColor.colorWithCalibratedRed_green_blue_alpha_(0.1, 0.1, 0.1, 0.4).setFill()
+            # Modo grabando: líneas entrelazadas estilo IA moderno
+            # Fondo casi invisible
+            NSColor.colorWithCalibratedRed_green_blue_alpha_(0.1, 0.1, 0.1, 0.2).setFill()
             path = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
                 self.bounds(), 6, 6
             )
             path.fill()
             
-            # Dibujar barras de ondas
             width = self.bounds().size.width
             height = self.bounds().size.height
             center_y = height / 2
             
-            num_bars = 5
-            bar_width = 4
-            spacing = 8
-            total_width = (num_bars * bar_width) + ((num_bars - 1) * spacing)
-            start_x = (width - total_width) / 2
+            # Dibujar 3 líneas entrelazadas con diferentes fases y velocidades
+            num_lines = 3
             
-            for i in range(num_bars):
-                # Calcular altura con efecto de onda
-                phase = self.wave_phase + (i * 0.5)
-                bar_height = 6 + abs(math.sin(phase) * 20)
+            for i in range(num_lines):
+                path = NSBezierPath.bezierPath()
                 
-                x = start_x + (i * (bar_width + spacing))
-                y = center_y - (bar_height / 2)
+                # Configuracion de la onda
+                time = self.wave_phase
+                frequency = 0.05 + (i * 0.01) # Frecuencia espacial
+                speed = 1.0 + (i * 0.5)       # Velocidad de oscilación
+                amplitude = 15 - (i * 2)      # Altura de la onda
+                phase_offset = i * (math.pi / 2) # Desfase entre líneas
                 
-                # Color azul con intensidad variable
-                intensity = abs(math.sin(phase))
+                # Iniciar el camino
+                start_y = center_y + math.sin(time * speed + phase_offset) * amplitude
+                path.moveToPoint_((0, start_y))
                 
-                color = NSColor.colorWithCalibratedRed_green_blue_alpha_(
-                    0.23, 0.51 + intensity * 0.14, 0.96, 1.0
-                )
-                color.setFill()
+                # Dibujar la curva punto por punto
+                for x in range(1, int(width), 2): # Paso de 2px para eficiencia
+                    # Fórmula compuesta para movimiento orgánico
+                    # Seno base + variación lenta
+                    wave = math.sin(x * frequency + time * speed + phase_offset)
+                    # Modulación de amplitud para que los bordes se atenúen (efecto lente)
+                    envelope = math.sin((x / width) * math.pi) 
+                    
+                    y = center_y + (wave * amplitude * envelope)
+                    path.lineToPoint_((x, y))
                 
-                bar_rect = NSMakeRect(x, y, bar_width, bar_height)
-                bar_path = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
-                    bar_rect, 2, 2
-                )
-                bar_path.fill()
+                # Configurar estilo de línea
+                path.setLineWidth_(2.0)
+                
+                # Colores grises/plateados con transparencia
+                # La línea más activa es más clara
+                if i == 0: # Principal
+                    NSColor.colorWithCalibratedRed_green_blue_alpha_(0.9, 0.9, 0.95, 0.9).setStroke()
+                elif i == 1: # Secundaria
+                    NSColor.colorWithCalibratedRed_green_blue_alpha_(0.6, 0.6, 0.65, 0.7).setStroke()
+                else: # Terciaria
+                    NSColor.colorWithCalibratedRed_green_blue_alpha_(0.4, 0.4, 0.45, 0.5).setStroke()
+                    
+                path.stroke()
     
     def setRecording_(self, recording):
         """Establece el estado de grabación"""

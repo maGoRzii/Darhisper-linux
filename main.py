@@ -13,6 +13,10 @@ import subprocess
 import os
 import json
 import logging
+import math
+import objc
+from AppKit import NSWindow, NSView, NSColor, NSMakeRect, NSBorderlessWindowMask, NSFloatingWindowLevel, NSTimer, NSBezierPath
+from Quartz import CGRectMake
 
 # Setup debug logging
 logging.basicConfig(
@@ -27,6 +31,302 @@ logging.info("Ghost Eagle starting up...")
 CONFIG_FILE = os.path.expanduser("~/.ghosteagle_config.json")
 SAMPLE_RATE = 16000
 DEFAULT_MODEL = "mlx-community/whisper-large-v3-turbo"
+
+class WaveView(NSView):
+    """Vista personalizada que dibuja las ondas de voz"""
+    def init(self):
+        self = objc.super(WaveView, self).init()
+        if self is None:
+            return None
+        self.wave_phase = 0.0
+        self.timer = None
+        self.drag_start_point = None
+        self.window_origin = None
+        self.is_recording = False  # Estado de grabación
+        return self
+    
+    def drawRect_(self, rect):
+        """Dibuja una línea fina o ondas según el estado"""
+        if not self.is_recording:
+            # Modo inactivo: mostrar solo una línea fina
+            # Sin fondo, solo la línea con borde
+            
+            # Línea en el centro
+            width = self.bounds().size.width
+            height = self.bounds().size.height
+            center_y = height / 2
+            
+            # Dibujar línea horizontal con efecto de borde
+            line_height = 3
+            line_y = center_y - (line_height / 2)
+            line_rect = NSMakeRect(1, line_y, width - 2, line_height)
+            
+            # Color gris oscuro para la línea (interior)
+            NSColor.colorWithCalibratedRed_green_blue_alpha_(
+                0.25, 0.25, 0.28, 1.0  # Gris oscuro
+            ).setFill()
+            
+            line_path = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
+                line_rect, 1.5, 1.5
+            )
+            line_path.fill()
+            
+            # Dibujar borde más claro alrededor
+            NSColor.colorWithCalibratedRed_green_blue_alpha_(
+                0.4, 0.4, 0.45, 0.8  # Gris más claro para el borde
+            ).setStroke()
+            line_path.setLineWidth_(0.5)
+            line_path.stroke()
+        else:
+            # Modo grabando: mostrar ondas animadas
+            # Fondo casi invisible para que solo se vean las ondas
+            NSColor.colorWithCalibratedRed_green_blue_alpha_(0.1, 0.1, 0.1, 0.4).setFill()
+            path = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
+                self.bounds(), 6, 6
+            )
+            path.fill()
+            
+            # Dibujar barras de ondas
+            width = self.bounds().size.width
+            height = self.bounds().size.height
+            center_y = height / 2
+            
+            num_bars = 5
+            bar_width = 4
+            spacing = 8
+            total_width = (num_bars * bar_width) + ((num_bars - 1) * spacing)
+            start_x = (width - total_width) / 2
+            
+            for i in range(num_bars):
+                # Calcular altura con efecto de onda
+                phase = self.wave_phase + (i * 0.5)
+                bar_height = 6 + abs(math.sin(phase) * 20)
+                
+                x = start_x + (i * (bar_width + spacing))
+                y = center_y - (bar_height / 2)
+                
+                # Color azul con intensidad variable
+                intensity = abs(math.sin(phase))
+                
+                color = NSColor.colorWithCalibratedRed_green_blue_alpha_(
+                    0.23, 0.51 + intensity * 0.14, 0.96, 1.0
+                )
+                color.setFill()
+                
+                bar_rect = NSMakeRect(x, y, bar_width, bar_height)
+                bar_path = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
+                    bar_rect, 2, 2
+                )
+                bar_path.fill()
+    
+    def setRecording_(self, recording):
+        """Establece el estado de grabación"""
+        self.is_recording = recording
+        self.setNeedsDisplay_(True)
+    
+    def mouseDown_(self, event):
+        """Evento cuando se presiona el mouse - inicia el arrastre"""
+        self.drag_start_point = event.locationInWindow()
+        self.window_origin = self.window().frame().origin
+    
+    def mouseDragged_(self, event):
+        """Evento cuando se arrastra el mouse - mueve la ventana"""
+        if self.drag_start_point is None or self.window_origin is None:
+            return
+        
+        current_location = event.locationInWindow()
+        from AppKit import NSScreen
+        
+        # Convertir a coordenadas de pantalla
+        window_frame = self.window().frame()
+        screen_location = self.window().convertBaseToScreen_(current_location)
+        
+        # Calcular nuevo origen
+        new_origin_x = self.window_origin.x + (current_location.x - self.drag_start_point.x)
+        new_origin_y = self.window_origin.y + (current_location.y - self.drag_start_point.y)
+        
+        # Mover la ventana sin restricciones
+        self.window().setFrameOrigin_((new_origin_x, new_origin_y))
+    
+    def mouseUp_(self, event):
+        """Evento cuando se suelta el mouse - finaliza el arrastre"""
+        self.drag_start_point = None
+        self.window_origin = None
+    
+    def startAnimation(self):
+        """Inicia la animación"""
+        if self.timer is None:
+            self.timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
+                0.05, self, 'updateWave:', None, True
+            )
+    
+    def stopAnimation(self):
+        """Detiene la animación"""
+        if self.timer is not None:
+            self.timer.invalidate()
+            self.timer = None
+    
+    def updateWave_(self, timer):
+        """Actualiza la fase de la onda y redibuja"""
+        self.wave_phase += 0.2
+        self.setNeedsDisplay_(True)
+
+class VoiceWaveWindow:
+    """Ventana flotante con ondas de voz animadas"""
+    def __init__(self, app):
+        self.app = app  # Referencia a la aplicación rumps
+        self.window = None
+        self.wave_view = None
+        self._show_pending = False
+        self._hide_pending = False
+        self._recording_pending = False
+        self._recording_state = False
+        
+        # Configurar timer para manejar operaciones de UI en el hilo principal
+        self.ui_timer = rumps.Timer(self._process_ui_operations, 0.1)
+        self.ui_timer.start()
+        
+    def _process_ui_operations(self, sender):
+        """Procesa operaciones de UI pendientes en el hilo principal"""
+        try:
+            # Crear ventana si es necesario (lazy creation)
+            if self.window is None:
+                self._create_window()
+                # Mostrar la ventana inmediatamente después de crearla
+                if self.window:
+                    self.window.orderFront_(None)
+                    self.window.makeKeyAndOrderFront_(None)
+                    print("Línea indicadora mostrada")
+            
+            # Cambiar estado de grabación si está pendiente
+            if self._recording_pending:
+                if self._recording_state:
+                    # Expandir ventana para ondas
+                    self._expand_window()
+                    if self.wave_view:
+                        self.wave_view.setRecording_(True)
+                        self.wave_view.startAnimation()
+                    print("Ventana expandida - ondas activas")
+                else:
+                    # Contraer ventana a línea
+                    self._contract_window()
+                    if self.wave_view:
+                        self.wave_view.setRecording_(False)
+                        self.wave_view.stopAnimation()
+                    print("Ventana contraída - modo línea")
+                self._recording_pending = False
+                
+        except Exception as e:
+            print(f"Error en _process_ui_operations: {e}")
+            import traceback
+            traceback.print_exc()
+        
+    def _create_window(self):
+        """Crea la ventana flotante como línea fina (llamado desde el hilo principal)"""
+        try:
+            # Crear ventana pequeña (línea fina más pequeña)
+            self.line_width = 50
+            self.line_height = 5
+            rect = NSMakeRect(0, 0, self.line_width, self.line_height)
+            self.window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
+                rect,
+                NSBorderlessWindowMask,
+                2,  # NSBackingStoreBuffered
+                False
+            )
+            
+            # Configurar ventana
+            self.window.setLevel_(NSFloatingWindowLevel)
+            self.window.setOpaque_(False)
+            self.window.setBackgroundColor_(NSColor.clearColor())
+            
+            # Hacer que aparezca en todos los espacios/escritorios
+            from AppKit import NSWindowCollectionBehaviorCanJoinAllSpaces
+            self.window.setCollectionBehavior_(NSWindowCollectionBehaviorCanJoinAllSpaces)
+            
+            # Posicionar en la pantalla (centro superior, pegado a la barra de herramientas)
+            from AppKit import NSScreen
+            screen = NSScreen.mainScreen()
+            screen_frame = screen.frame()
+            # Centro horizontal
+            x = (screen_frame.size.width - self.line_width) / 2
+            # Arriba del todo (en macOS, y alto = arriba)
+            y = screen_frame.size.height - self.line_height - 5  # 5px desde el top
+            self.window.setFrameOrigin_((x, y))
+            
+            # Crear vista de ondas
+            self.wave_view = WaveView.alloc().init()
+            self.wave_view.setFrame_(rect)
+            
+            # Agregar vista a la ventana
+            self.window.setContentView_(self.wave_view)
+            
+            print("Línea indicadora creada exitosamente")
+        except Exception as e:
+            print(f"Error creando ventana: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _expand_window(self):
+        """Expande la ventana para mostrar ondas (hacia abajo desde la línea)"""
+        if not self.window:
+            return
+        
+        # Guardar posición actual
+        current_pos = self.window.frame().origin
+        
+        # Nuevo tamaño expandido
+        new_width = 100
+        new_height = 50
+        
+        # Calcular nueva posición: centrado horizontalmente, mantener top fijo
+        new_x = current_pos.x - (new_width - self.line_width) / 2
+        # En macOS, para mantener el top fijo al expandir hacia abajo,
+        # debemos RESTAR la diferencia de altura del Y
+        new_y = current_pos.y - (new_height - self.line_height)
+        
+        # Redimensionar ventana
+        new_frame = NSMakeRect(new_x, new_y, new_width, new_height)
+        self.window.setFrame_display_(new_frame, True)
+        
+        # Redimensionar vista
+        if self.wave_view:
+            self.wave_view.setFrame_(NSMakeRect(0, 0, new_width, new_height))
+    
+    def _contract_window(self):
+        """Contrae la ventana a línea fina"""
+        if not self.window:
+            return
+        
+        # Guardar posición actual
+        current_frame = self.window.frame()
+        center_x = current_frame.origin.x + current_frame.size.width / 2
+        top_y = current_frame.origin.y  # Mantener posición superior
+        
+        # Calcular nueva posición: centrado horizontalmente, mantener top fijo
+        new_x = center_x - self.line_width / 2
+        # Para volver a la línea, debemos SUMAR la diferencia de altura
+        # para que el top vuelva a su posición original
+        new_y = top_y + (current_frame.size.height - self.line_height)
+        
+        # Redimensionar ventana a línea
+        new_frame = NSMakeRect(new_x, new_y, self.line_width, self.line_height)
+        self.window.setFrame_display_(new_frame, True)
+        
+        # Redimensionar vista
+        if self.wave_view:
+            self.wave_view.setFrame_(NSMakeRect(0, 0, self.line_width, self.line_height))
+    
+    def show(self):
+        """Muestra ondas (inicia grabación)"""
+        self._recording_state = True
+        self._recording_pending = True
+        
+    def hide(self):
+        """Oculta ondas (detiene grabación, pero mantiene línea visible)"""
+        self._recording_state = False
+        self._recording_pending = True
+
 
 class AudioRecorder:
     def __init__(self):
@@ -74,6 +374,9 @@ class VoiceTranscriberApp(rumps.App):
         self.is_transcribing = False
         self.is_learning_hotkey = False
         self.learning_keys = set()
+        
+        # Inicializar ventana de ondas (ahora con PyObjC, no necesita hilo separado)
+        self.wave_window = VoiceWaveWindow(self)
         
         # Load configuration
         self.config = self.load_config()
@@ -156,7 +459,8 @@ class VoiceTranscriberApp(rumps.App):
             "mlx-community/whisper-tiny-mlx",
             "mlx-community/whisper-base-mlx",
             "mlx-community/whisper-small-mlx",
-            "mlx-community/whisper-large-v3-turbo"
+            "mlx-community/whisper-large-v3-turbo",
+            "mlx-community/whisper-large-v3-turbo-q4"
         ]
         img_model_menu = rumps.MenuItem("Select Model")
         for m in models:
@@ -240,7 +544,8 @@ class VoiceTranscriberApp(rumps.App):
                 sd.play(self.start_sound, samplerate=SAMPLE_RATE)
             except Exception as e:
                 print(f"Error playing sound: {e}")
-            self.title = "🔴"
+            # Mostrar ventana de ondas en lugar de cambiar el icono
+            self.wave_window.show()
             self.recorder.start()
 
     def on_release(self, key):
@@ -273,7 +578,8 @@ class VoiceTranscriberApp(rumps.App):
             # Check if the combo is broken
             if not self.hotkey_check.issubset(self.current_keys): 
                 print("Stop recording...")
-                self.title = "🎙️"
+                # Ocultar ventana de ondas
+                self.wave_window.hide()
                 audio = self.recorder.stop()
                 try:
                     sd.play(self.stop_sound, samplerate=SAMPLE_RATE)

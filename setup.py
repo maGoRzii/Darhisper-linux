@@ -5,7 +5,7 @@ from setuptools import setup
 APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {
-    'argv_emulation': True,
+    'argv_emulation': False,
     'plist': {
         'LSUIElement': True,
         'CFBundleName': 'GhostEagle',
@@ -20,6 +20,7 @@ OPTIONS = {
     },
     'packages': ['rumps', 'pynput', 'sounddevice', 'numpy', 'pyperclip', 'pyautogui', 'mlx_whisper'],
     'includes': ['mlx.core', 'mlx.nn', 'mlx.utils', 'mlx.optimizers'],
+    'excludes': ['rubicon'],
 }
 
 setup(

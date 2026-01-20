@@ -7,3 +7,4 @@ pyperclip
 pyautogui
 scipy
 py2app
+rubicon-objc

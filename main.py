@@ -12,6 +12,16 @@ from pynput import keyboard
 import subprocess
 import os
 import json
+import logging
+
+# Setup debug logging
+logging.basicConfig(
+    filename='/tmp/ghosteagle_debug.log',
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logging.info("Ghost Eagle starting up...")
+
 
 # Configuration
 CONFIG_FILE = os.path.expanduser("~/.ghosteagle_config.json")

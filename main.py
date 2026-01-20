@@ -516,8 +516,43 @@ class VoiceTranscriberApp(rumps.App):
             if m == self.model_path:
                 item.state = 1
             img_model_menu.add(item)
+        
+        img_model_menu.add(rumps.separator)
+        
+        # API Keys Section
+        header_keys = rumps.MenuItem("--- API Keys ---")
+        img_model_menu.add(header_keys)
+        
+        img_model_menu.add(rumps.MenuItem("Edit Gemini API Key", callback=self.edit_gemini_key))
             
         self.menu["Model"].add(img_model_menu)
+
+    def edit_gemini_key(self, sender):
+        window = rumps.Window(
+            title="Gemini API Key",
+            message="Edit your Google Gemini API Key:",
+            default_text=self.gemini_api_key if self.gemini_api_key else "",
+            ok="Save",
+            cancel="Cancel",
+            dimensions=(300, 24)
+        )
+        response = window.run()
+        if response.clicked:
+            new_key = response.text.strip()
+            self.gemini_api_key = new_key
+            self.config["gemini_api_key"] = self.gemini_api_key
+            self.save_config()
+            
+            # Re-init client
+            if self.gemini_api_key:
+                try:
+                    self.gemini_client = genai.Client(api_key=self.gemini_api_key)
+                    rumps.alert("Success", "Gemini API Key updated successfully.")
+                except Exception as e:
+                    rumps.alert("Error", f"Error initializing Gemini client: {e}")
+            else:
+                 self.gemini_client = None
+                 rumps.alert("Success", "Gemini API Key cleared.")
 
     def change_model(self, sender):
         model_name = sender.title

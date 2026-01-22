@@ -92,6 +92,15 @@ Haz clic en el icono 🎙️ de la barra de menú para acceder a las opciones:
 *   **Modelos Cloud (API)**:
     *   *Gemini Flash*: Requiere API Key. Ofrece una "comprensión" superior, capaz de seguir instrucciones como "pon esto en una lista" o corregir gramática al vuelo.
 
+#### 🎭 Selección de Modos (Smart Prompts)
+*(Disponible solo con modelos Gemini)*
+
+Personaliza cómo la IA procesa tu voz seleccionando un modo en el menú "Mode":
+*   **Transcripción Literal**: Escribe exactamente lo que dices, letra por letra.
+*   **Lista de Tareas (To-Do)**: Transforma tus divagaciones en una lista limpia y accionable de tareas.
+*   **Email Profesional**: Convierte un dictado informal en un correo electrónico pulido, formal y listo para enviar.
+*   **Modo Excel/Datos**: Formatea números y listas para que se peguen perfectamente en celdas de hojas de cálculo.
+
 #### ⌨️ Atajos (Shortcut)
 *   Elige entre presets comunes (`F5`, `Cmd+Opt+R`).
 *   Selecciona **"Record New Shortcut..."** para grabar tu propia combinación de teclas favorita.

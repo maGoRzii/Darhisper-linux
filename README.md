@@ -1,71 +1,121 @@
-# Ghost Eagle 🦅🎙️
+# Darhisper 🦅🎙️
 
-Aplicación de barra de menú para macOS que transcribe voz a texto localmente y a ultra-velocidad usando `mlx-whisper` (optimizado para Apple Silicon). También soporta transcripción en la nube vía Google Gemini.
+> **Tu asistente de voz definitivo para macOS. Transcripción instantánea, local y privada.**
 
-## 🍎 Requisitos
+![macOS](https://img.shields.io/badge/macOS-Apple_Silicon-white?logo=apple&logoColor=black) ![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python&logoColor=white) ![MLX](https://img.shields.io/badge/Powered_by-Apple_MLX-yellow)
 
-*   **Mac con Apple Silicon** (Chip M1, M2, M3, etc.). **NO funciona en procesadores Intel.**
-*   macOS 12.0 o superior.
-*   Conexión a internet (solo para la primera descarga de modelos).
-
-## 📥 Instalación (Paso a Paso)
-
-Si tienes el archivo `GhostEagle.app`, sigue estos pasos para instalarlo en un Mac nuevo:
-
-1.  **Copiar la App**:
-    Arrastra el archivo `GhostEagle.app` a la carpeta de **Aplicaciones** de tu Mac.
-
-2.  **Permitir Ejecución (Gatekeeper)**:
-    Como la app no está firmada por Apple, macOS podría bloquearla al principio. Para solucionarlo:
-    *   Abre la **Terminal** (Comando + Espacio -> escribe "Terminal").
-    *   Copia y pega este comando y pulsa Enter:
-        ```bash
-        xattr -cr /Applications/GhostEagle.app
-        ```
-    *(Esto elimina la marca de cuarentena que macOS pone a las apps descargadas de internet/airdrop)*.
-
-3.  **Primer Inicio y Modelos**:
-    *   Abre **GhostEagle** desde tu carpeta de Aplicaciones.
-    *   Verás un icono de micrófono 🎙️ en la barra de menú superior.
-    *   **¡Paciencia!** La primera vez que intentes transcribir, la app parecerá congelada unos segundos/minutos. Está descargando los modelos de IA en segundo plano.
-
-4.  **Permisos de macOS**:
-    El sistema te pedirá permisos la primera vez. Es CRÍTICO que aceptes todos para que funcione:
-    *   🎤 **Micrófono**: Para escucharte.
-    *   ⌨️ **Accesibilidad**: Para detectar cuando presionas el atajo de teclado y pegar el texto.
-    *   🤖 **Eventos del Sistema**: Para controlar el teclado virtual.
-
-## 🎙️ Uso
-
-1.  **Transcribir**:
-    *   Coloca el cursor donde quieras escribir (Word, Notas, Slack...).
-    *   Mantén pulsado el atajo (Por defecto **F5** o **Option Derecho**).
-    *   Escucharás un *beep* y verás una onda de voz en pantalla. Habla.
-    *   Suelta la tecla. El texto se escribirá automáticamente.
-
-2.  **Configuración**:
-    Haz clic en el icono 🎙️ de la barra de menú para:
-    *   **Model**: Cambiar entre modelos locales (MLX) o nube (Gemini).
-    *   **Shortcut**: Elegir o grabar un nuevo atajo de teclado.
-    *   **API Keys**: Configurar tu clave de Gemini si usas modelos en la nube.
+**Darhisper** es una herramienta de productividad residente en la barra de menú diseñada exclusivamente para **macOS (Apple Silicon)**. Permite dictar texto en cualquier aplicación con una velocidad y precisión sorprendentes, utilizando la potencia del motor neuronal de tu Mac o la flexibilidad de la nube.
 
 ---
 
-## 🛠️ Desarrollo (Para Programadores)
+## ✨ Características Principales
 
-Si quieres ejecutar el código fuente o compilar tu propia versión:
+*   **⚡️ Velocidad Ultrarrapida (Local)**: Utiliza `mlx-whisper` optimizado específicamente para chips Apple Silicon (M1/M2/M3), ofreciendo transcripciones casi instantáneas sin enviar datos a internet.
+*   **☁️ Potencia en la Nube (Opcional)**: Integración nativa con **Google Gemini 3.0 Flash** para cuando necesitas una "inteligencia" superior en la transcripción, capaz de entender contextos complejos, instrucciones y puntuación perfecta.
+*   **🎨 Diseño Elegante**: Feedback visual moderno con una interfaz de ondas de voz animadas que flotan sobre tu pantalla mientras dictas.
+*   **⌨️ Escribe Donde Sea**: Funciona globalmente. Simplemente coloca el cursor, mantén presionado tu atajo y habla. El texto se escribe mágicamente en la aplicación activa.
+*   **⚙️ Totalmente Configurable**:
+    *   Cambia de modelos de IA al vuelo.
+    *   Graba tus propios atajos de teclado personalizados.
+    *   Gestiona tus claves de API de forma segura.
 
-1.  **Clonar e Instalar**:
+---
+
+## 🖥️ Requisitos del Sistema
+
+Para garantizar el máximo rendimiento, Darhisper tiene requisitos específicos:
+
+*   **Hardware**: Mac con chip **Apple Silicon** (M1, M1 Pro/Max/Ultra, M2, M3, etc.).
+    *   *Nota: No es compatible con Macs basados en Intel debido a la dependencia de MLX.*
+*   **Sistema Operativo**: macOS 12.0 (Monterey) o superior.
+*   **Permisos**: Requiere acceso a **Micrófono** y **Accesibilidad** (para la inserción de texto).
+
+---
+
+## 🚀 Instalación y Uso
+
+### Opción A: Para Usuarios (Aplicación Compilada)
+
+1.  **Descarga**: Obtén la última versión de `Darhisper.app` (desde la carpeta `dist` si lo has compilado tú mismo).
+2.  **Instala**: Arrastra la app a tu carpeta de **Aplicaciones**.
+3.  **Primer Lanzamiento**:
+    *   Al abrir la app, verás un icono 🎙️ en la barra de menú.
+    *   **Importante**: Si macOS indica que la app "está dañada" o "no se puede abrir", ejecuta este comando en la Terminal para firmarla localmente:
+        ```bash
+        xattr -cr /Applications/Darhisper.app
+        ```
+4.  **Concede Permisos**: La primera vez que intentes usarla, macOS te pedirá permisos. Acepta:
+    *   🎤 Micrófono.
+    *   ⌨️ Accesibilidad/Eventos del sistema (para pegar el texto).
+
+### Opción B: Para Desarrolladores (Código Fuente)
+
+Si prefieres ejecutarlo desde el código o contribuir:
+
+1.  **Clonar el repositorio**:
     ```bash
     git clone https://github.com/maGoRzii/Darhisper.git
     cd Darhisper
+    ```
+
+2.  **Configurar entorno**:
+    ```bash
     python3 -m venv venv
     source venv/bin/activate
     pip install -r requirements.txt
     ```
+    *Es posible que necesites instalar `portaudio` para el audio:* `brew install portaudio`
 
-2.  **Compilar .app**:
+3.  **Ejecutar**:
     ```bash
-    python3 setup.py py2app
+    ./start.sh
     ```
-    La aplicación se generará en la carpeta `dist/`.
+
+---
+
+## 📖 Guía de Uso
+
+### Flujo de Trabajo Básico
+1.  Haz clic donde quieras escribir (Slack, Notion, VS Code, etc.).
+2.  **Mantén presionado** el atajo de teclado (Por defecto: `F5` o `Opción Derecha`).
+3.  Espera el **Beep** y habla cuando veas la **onda de voz** en pantalla.
+4.  Suelta la tecla al terminar. El texto aparecerá automáticamente.
+
+### Configuración Avanzada
+
+Haz clic en el icono 🎙️ de la barra de menú para acceder a las opciones:
+
+#### 🧠 Selección de Modelos (Model)
+*   **Modelos Locales (MLX)**:
+    *   *Tiny/Base/Small*: Extremadamente rápidos, bajo consumo de batería.
+    *   *Large-v3-Turbo*: Mayor precisión, ideal para dictados largos y complejos.
+*   **Modelos Cloud (API)**:
+    *   *Gemini Flash*: Requiere API Key. Ofrece una "comprensión" superior, capaz de seguir instrucciones como "pon esto en una lista" o corregir gramática al vuelo.
+
+#### ⌨️ Atajos (Shortcut)
+*   Elige entre presets comunes (`F5`, `Cmd+Opt+R`).
+*   Selecciona **"Record New Shortcut..."** para grabar tu propia combinación de teclas favorita.
+
+#### 🔐 Seguridad y API Keys
+*   Para usar Google Gemini, ve a `Model` -> `Edit Gemini API Key`.
+*   Tu clave se guarda localmente en `~/.darhisper_config.json` y nunca se comparte.
+*   Los modelos locales (`mlx`) funcionan 100% offline y son totalmente privados.
+
+---
+
+## ❓ Solución de Problemas
+
+| Problema | Solución |
+| :--- | :--- |
+| **No escribe nada** | Verifica que has dado permisos de **Accesibilidad** en *Preferencias del Sistema -> Privacidad y Seguridad*. |
+| **Error al iniciar** | Asegúrate de tener un Mac con **Apple Silicon**. Borra la carpeta `~/.darhisper_config.json` para resetear la config. |
+| **La primera transcripción tarda** | Es normal. La primera vez, la app descarga los modelos de IA (1-3 GB). Las siguientes serán instantáneas. |
+
+---
+
+## 📄 Licencia
+
+Este proyecto es de código abierto. Siéntete libre de modificarlo, mejorarlo y compartirlo.
+
+---
+*Hecho para maximizar tu productividad.*

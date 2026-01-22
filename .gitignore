@@ -2,7 +2,7 @@ __pycache__/
 *.pyc
 .DS_Store
 venv/
-.ghosteagle_config.json
+.darhisper_config.json
 /build
 /dist
 *.egg-info

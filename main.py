@@ -24,15 +24,15 @@ import traceback
 
 # Setup debug logging
 logging.basicConfig(
-    filename='/tmp/ghosteagle_debug.log',
+    filename='/tmp/darhisper_debug.log',
     level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
-logging.info("Ghost Eagle starting up...")
+logging.info("Darhisper starting up...")
 
 
 # Configuration
-CONFIG_FILE = os.path.expanduser("~/.ghosteagle_config.json")
+CONFIG_FILE = os.path.expanduser("~/.darhisper_config.json")
 SAMPLE_RATE = 16000
 DEFAULT_MODEL = "mlx-community/whisper-large-v3-turbo"
 
@@ -641,7 +641,7 @@ class VoiceTranscriberApp(rumps.App):
         self.is_learning_hotkey = True
         self.learning_keys = set()
         self.title = "⌨️"
-        rumps.notification("Ghost Eagle", "Recording Shortcut", "Press your desired key combination now.")
+        rumps.notification("Darhisper", "Recording Shortcut", "Press your desired key combination now.")
 
     def setup_hotkey_listener(self):
         self.listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
@@ -677,7 +677,7 @@ class VoiceTranscriberApp(rumps.App):
                 # Reset UI
                 self.is_learning_hotkey = False
                 self.title = "🎙️"
-                rumps.notification("Ghost Eagle", "Shortcut Saved", "New shortcut has been saved.")
+                rumps.notification("Darhisper", "Shortcut Saved", "New shortcut has been saved.")
                 
                 # Update menu state (clear others)
                 for item in self.menu["Shortcut"]["Select Shortcut"].values():

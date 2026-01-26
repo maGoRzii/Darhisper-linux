@@ -1,56 +1,34 @@
 # Darhisper 🦅🎙️
 
-> **Tu asistente de voz definitivo para macOS. Transcripción instantánea, local y privada.**
+> **Tu asistente de voz definitivo para transcripción instantánea en Linux.**
+> *Optimizado para NVIDIA RTX (NeMo Parakeet).*
 
-![macOS](https://img.shields.io/badge/macOS-Apple_Silicon-white?logo=apple&logoColor=black) ![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python&logoColor=white) ![MLX](https://img.shields.io/badge/Powered_by-Apple_MLX-yellow)
+![Linux](https://img.shields.io/badge/Linux-NVIDIA_RTX-green?logo=linux&logoColor=white) ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white) ![NVIDIA NeMo](https://img.shields.io/badge/Powered_by-NVIDIA_NeMo-76B900?logo=nvidia&logoColor=white)
 
-**Darhisper** es una herramienta de productividad residente en la barra de menú diseñada exclusivamente para **macOS (Apple Silicon)**. Permite dictar texto en cualquier aplicación con una velocidad y precisión sorprendentes, utilizando la potencia del motor neuronal de tu Mac o la flexibilidad de la nube.
+**Darhisper** es una herramienta de productividad residente en tu bandeja del sistema (System Tray) que permite dictar texto en cualquier aplicación. Utiliza la potencia de tu GPU NVIDIA para transcribir voz a texto localmente con velocidad extrema.
 
 ---
 
 ## ✨ Características Principales
 
-*   **⚡️ Velocidad Ultrarrapida (Local)**: Utiliza `mlx-whisper` optimizado específicamente para chips Apple Silicon (M1/M2/M3), ofreciendo transcripciones casi instantáneas sin enviar datos a internet.
-*   **☁️ Potencia en la Nube (Opcional)**: Integración nativa con **Google Gemini 3.0 Flash** para cuando necesitas una "inteligencia" superior en la transcripción, capaz de entender contextos complejos, instrucciones y puntuación perfecta.
-*   **🎨 Diseño Elegante**: Feedback visual moderno con una interfaz de ondas de voz animadas que flotan sobre tu pantalla mientras dictas.
-*   **⌨️ Escribe Donde Sea**: Funciona globalmente. Simplemente coloca el cursor, mantén presionado tu atajo y habla. El texto se escribe mágicamente en la aplicación activa.
-*   **⚙️ Totalmente Configurable**:
-    *   Cambia de modelos de IA al vuelo.
-    *   Graba tus propios atajos de teclado personalizados.
-    *   Gestiona tus claves de API de forma segura.
+*   **⚡️ Velocidad Ultrarrapida (Local)**: Utiliza el motor **NVIDIA NeMo** con el modelo **Parakeet-TDT (0.6B)**, ofreciendo transcripción en tiempo real y privacidad total.
+*   **☁️ Potencia en la Nube (Opcional)**: Integración con **Google Gemini 1.5 Flash** para "Smart Prompts" (corrección de estilo, resúmenes, emails, etc.).
+*   **🎨 Diseño Elegante**: Feedback visual moderno (Overlay flotante) y sonoro (Beeps de confirmación).
+*   **⌨️ Push-to-Talk**: Mantén presionado `Control Derecho` (configurable) y habla. El texto se escribe mágicamente al soltar.
+*   **🐧 Linux Nativo**: Integración perfecta con escritorios Linux (Gnome, Cinnamon, KDE).
 
 ---
 
 ## 🖥️ Requisitos del Sistema
 
-Para garantizar el máximo rendimiento, Darhisper tiene requisitos específicos:
-
-*   **Hardware**: Mac con chip **Apple Silicon** (M1, M1 Pro/Max/Ultra, M2, M3, etc.).
-    *   *Nota: No es compatible con Macs basados en Intel debido a la dependencia de MLX.*
-*   **Sistema Operativo**: macOS 12.0 (Monterey) o superior.
-*   **Permisos**: Requiere acceso a **Micrófono** y **Accesibilidad** (para la inserción de texto).
+*   **Sistema Operativo**: Linux (Probado en Linux Mint / Ubuntu 22.04+).
+*   **GPU**: NVIDIA RTX (RTX 3060/4060 o superior recomendada) con drivers propietarios instalados.
+*   **Audio**: Servidor de audio PulseAudio o PipeWire funcionando.
+*   **Dependencias**: Python 3.10+, `xclip` o `xsel` (opcional, para portapapeles).
 
 ---
 
-## 🚀 Instalación y Uso
-
-### Opción A: Para Usuarios (Aplicación Compilada)
-
-1.  **Descarga**: Obtén la última versión de `Darhisper.app` (desde la carpeta `dist` si lo has compilado tú mismo).
-2.  **Instala**: Arrastra la app a tu carpeta de **Aplicaciones**.
-3.  **Primer Lanzamiento**:
-    *   Al abrir la app, verás un icono 🎙️ en la barra de menú.
-    *   **Importante**: Si macOS indica que la app "está dañada" o "no se puede abrir", ejecuta este comando en la Terminal para firmarla localmente:
-        ```bash
-        xattr -cr /Applications/Darhisper.app
-        ```
-4.  **Concede Permisos**: La primera vez que intentes usarla, macOS te pedirá permisos. Acepta:
-    *   🎤 Micrófono.
-    *   ⌨️ Accesibilidad/Eventos del sistema (para pegar el texto).
-
-### Opción B: Para Desarrolladores (Código Fuente)
-
-Si prefieres ejecutarlo desde el código o contribuir:
+## 🚀 Instalación
 
 1.  **Clonar el repositorio**:
     ```bash
@@ -58,15 +36,19 @@ Si prefieres ejecutarlo desde el código o contribuir:
     cd Darhisper
     ```
 
-2.  **Configurar entorno**:
+2.  **Instalar dependencias del sistema**:
     ```bash
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
+    sudo apt install python3-pyaudio portaudio19-dev python3-tk
     ```
-    *Es posible que necesites instalar `portaudio` para el audio:* `brew install portaudio`
 
-3.  **Ejecutar**:
+3.  **Configurar entorno automáticamente**:
+    Ejecuta el script de instalación. Esto creará un entorno virtual aislado y descargará PyTorch con soporte CUDA.
+    ```bash
+    chmod +x setup_linux.sh start.sh
+    ./setup_linux.sh
+    ```
+
+4.  **Iniciar la aplicación**:
     ```bash
     ./start.sh
     ```
@@ -75,40 +57,26 @@ Si prefieres ejecutarlo desde el código o contribuir:
 
 ## 📖 Guía de Uso
 
-### Flujo de Trabajo Básico
-1.  Haz clic donde quieras escribir (Slack, Notion, VS Code, etc.).
-2.  **Mantén presionado** el atajo de teclado (Por defecto: `F5` o `Opción Derecha`).
-3.  Espera el **Beep** y habla cuando veas la **onda de voz** en pantalla.
-4.  Suelta la tecla al terminar. El texto aparecerá automáticamente.
+### Flujo de Trabajo
+1.  Haz clic donde quieras escribir (Terminal, Slack, Obsidian, Navegador...).
+2.  **Mantén presionado** la tecla `Control Derecho`.
+3.  Escucharás un **Beep agudo** 🎵 y verás una **onda de voz** flotante. Habla con naturalidad.
+4.  Suelta la tecla. Tras un **Beep grave** 🎵, el texto aparecerá escrito automáticamente.
 
-### Configuración Avanzada
+### Configuración (Bandeja del Sistema)
 
-Haz clic en el icono 🎙️ de la barra de menú para acceder a las opciones:
+Haz clic en el icono 🎙️ de la barra de tareas (Tray Icon) para:
 
-#### 🧠 Selección de Modelos (Model)
-*   **Modelos Locales (MLX)**:
-    *   *Tiny/Base/Small*: Extremadamente rápidos, bajo consumo de batería.
-    *   *Large-v3-Turbo*: Mayor precisión, ideal para dictados largos y complejos.
-*   **Modelos Cloud (API)**:
-    *   *Gemini Flash*: Requiere API Key. Ofrece una "comprensión" superior, capaz de seguir instrucciones como "pon esto en una lista" o corregir gramática al vuelo.
+#### 🧠 Modos Inteligentes (Smart Prompts)
+*(Requiere configurar API Key de Gemini)*
+*   **Transcripción Literal**: Escribe tal cual lo que dices (Modo Offline predeterminado).
+*   **Lista de Tareas**: Formatea lo dictado como viñetas de una lista.
+*   **Email Profesional**: Reescribe lo dictado con tono formal y estructura de correo.
+*   **Modo Excel**: Formatea números y datos para hojas de cálculo.
 
-#### 🎭 Selección de Modos (Smart Prompts)
-*(Disponible solo con modelos Gemini)*
-
-Personaliza cómo la IA procesa tu voz seleccionando un modo en el menú "Mode":
-*   **Transcripción Literal**: Escribe exactamente lo que dices, letra por letra.
-*   **Lista de Tareas (To-Do)**: Transforma tus divagaciones en una lista limpia y accionable de tareas.
-*   **Email Profesional**: Convierte un dictado informal en un correo electrónico pulido, formal y listo para enviar.
-*   **Modo Excel/Datos**: Formatea números y listas para que se peguen perfectamente en celdas de hojas de cálculo.
-
-#### ⌨️ Atajos (Shortcut)
-*   Elige entre presets comunes (`F5`, `Cmd+Opt+R`).
-*   Selecciona **"Record New Shortcut..."** para grabar tu propia combinación de teclas favorita.
-
-#### 🔐 Seguridad y API Keys
-*   Para usar Google Gemini, ve a `Model` -> `Edit Gemini API Key`.
-*   Tu clave se guarda localmente en `~/.darhisper_config.json` y nunca se comparte.
-*   Los modelos locales (`mlx`) funcionan 100% offline y son totalmente privados.
+#### 🔐 Configurar API Keys
+*   Ve a la opción `Configurar API Key` para introducir tu clave de Google Gemini si deseas usar los modos inteligentes.
+*   **Nota**: La transcripción básica (Literal) es 100% local y **NO requiere clave ni internet**.
 
 ---
 
@@ -116,15 +84,11 @@ Personaliza cómo la IA procesa tu voz seleccionando un modo en el menú "Mode":
 
 | Problema | Solución |
 | :--- | :--- |
-| **No escribe nada** | Verifica que has dado permisos de **Accesibilidad** en *Preferencias del Sistema -> Privacidad y Seguridad*. |
-| **Error al iniciar** | Asegúrate de tener un Mac con **Apple Silicon**. Borra la carpeta `~/.darhisper_config.json` para resetear la config. |
-| **La primera transcripción tarda** | Es normal. La primera vez, la app descarga los modelos de IA (1-3 GB). Las siguientes serán instantáneas. |
+| **Error `externally-managed-environment`** | Usa siempre `./start.sh` para ejecutar la app. No uses `python main.py` directamente fuera del entorno. |
+| **La primera vez tarda mucho** | La primera ejecución descarga el modelo NVIDIA Parakeet (~1.1GB). Ten paciencia, las siguientes serán instantáneas. |
+| **Crash al iniciar** | Verifica que tienes los drivers de NVIDIA cargados correctamente ejecutando `nvidia-smi` en la terminal. |
 
 ---
 
 ## 📄 Licencia
-
-Este proyecto es de código abierto. Siéntete libre de modificarlo, mejorarlo y compartirlo.
-
----
-*Hecho para maximizar tu productividad.*
+Este proyecto es de código abierto. ¡Contribuciones bienvenidas!

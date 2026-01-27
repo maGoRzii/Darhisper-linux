@@ -53,6 +53,15 @@
     ./start.sh
     ```
 
+    ./start.sh
+    ```
+
+5.  **Crear acceso directo (Opcional)**:
+    Para abrir la app desde el menú de aplicaciones sin terminal:
+    ```bash
+    ./create_launcher.sh
+    ```
+
 ---
 
 ## 📖 Guía de Uso

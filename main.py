@@ -899,6 +899,8 @@ class DarhisperInterface(QMainWindow):
 # --- Main Application Controller ---
 class DarhisperApp(QObject):
     request_transcribe = pyqtSignal(object, str, str)
+    start_recording_signal = pyqtSignal()
+    stop_recording_signal = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -955,6 +957,8 @@ class DarhisperApp(QObject):
         self.worker.file_finished.connect(self.handle_file_transcription_result)
         self.worker.file_progress.connect(self.handle_file_progress)
         self.worker.error.connect(self.handle_error)
+        self.start_recording_signal.connect(self.start_recording)
+        self.stop_recording_signal.connect(self.stop_recording)
         
         # Preload Model
         QTimer.singleShot(1000, lambda: self.worker.load_model())
@@ -1091,7 +1095,7 @@ class DarhisperApp(QObject):
             self.current_keys.add(key)
         
         if self.current_keys == self.hotkey and not self.recorder.recording:
-            self.start_recording()
+            self.start_recording_signal.emit()
 
     def on_release(self, key):
         if key in self.current_keys:
@@ -1099,7 +1103,7 @@ class DarhisperApp(QObject):
             
         if self.recorder.recording:
             if not self.hotkey.issubset(self.current_keys):
-                self.stop_recording()
+                self.stop_recording_signal.emit()
 
     def start_recording(self):
         if self.recorder.recording:

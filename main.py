@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (QApplication, QSystemTrayIcon, QMenu, QWidget,
                             QInputDialog, QMessageBox, QFrame, QMainWindow,
                             QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
                             QComboBox, QProgressBar, QTextEdit, QFileDialog,
-                            QGroupBox, QGridLayout, QScrollArea)
+                            QGroupBox, QGridLayout, QScrollArea, QSizePolicy)
 from PyQt6.QtCore import (Qt, QTimer, QThread, pyqtSignal, QObject, 
                          QPoint, QRectF, QSize)
 from PyQt6.QtGui import (QPainter, QColor, QPainterPath, QPen, QIcon, 
@@ -513,7 +513,8 @@ class DarhisperInterface(QMainWindow):
         
     def setup_ui(self):
         self.setWindowTitle("🎙️ DARHISPER")
-        self.setFixedSize(720, 850)
+        self.resize(720, 850)
+        self.setMinimumSize(600, 700)
         self.setStyleSheet("""
             QMainWindow {
                 background-color: #1a1a2e;
@@ -622,7 +623,25 @@ class DarhisperInterface(QMainWindow):
         
         central = QWidget()
         self.setCentralWidget(central)
-        layout = QVBoxLayout(central)
+        main_layout = QVBoxLayout(central)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll.setStyleSheet(
+            "QScrollArea { background: transparent; }"
+            "QScrollArea > QWidget > QWidget { background: transparent; }"
+        )
+        main_layout.addWidget(scroll)
+
+        content = QWidget()
+        content.setStyleSheet("background: transparent;")
+        scroll.setWidget(content)
+
+        layout = QVBoxLayout(content)
         layout.setSpacing(15)
         layout.setContentsMargins(20, 20, 20, 20)
         
@@ -648,6 +667,8 @@ class DarhisperInterface(QMainWindow):
         
         self.file_path_label = QLabel("Ningún archivo seleccionado")
         self.file_path_label.setStyleSheet("color: rgba(255,255,255,0.5); font-family: monospace;")
+        self.file_path_label.setWordWrap(True)
+        self.file_path_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         file_row.addWidget(self.file_path_label, 1)
         file_layout.addLayout(file_row)
         
@@ -697,9 +718,10 @@ class DarhisperInterface(QMainWindow):
         file_col = QVBoxLayout()
         file_col.addWidget(QLabel("Modelo Archivo:"))
         self.file_model_combo = QComboBox()
-        self.file_model_combo.addItems(["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"])
-        self.file_model_combo.setCurrentText(self.app.file_transcription_model)
-        self.file_model_combo.currentTextChanged.connect(self.change_file_model)
+        self.file_model_combo.addItem("Gemini 3 Flash Preview", "gemini-3-flash-preview")
+        current_index = self.file_model_combo.findData(self.app.file_transcription_model)
+        self.file_model_combo.setCurrentIndex(current_index if current_index != -1 else 0)
+        self.file_model_combo.currentIndexChanged.connect(self.change_file_model)
         file_col.addWidget(self.file_model_combo)
         models_row.addLayout(file_col)
         
@@ -739,11 +761,13 @@ class DarhisperInterface(QMainWindow):
         
         # --- Transcription Output Section ---
         output_group = QGroupBox("TRANSCRIPCIÓN")
+        output_group.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         output_layout = QVBoxLayout(output_group)
         
         self.transcription_text = QTextEdit()
         self.transcription_text.setPlaceholderText("La transcripción aparecerá aquí...")
         self.transcription_text.setMinimumHeight(150)
+        self.transcription_text.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         output_layout.addWidget(self.transcription_text)
         
         output_layout.addSpacing(10)
@@ -763,7 +787,7 @@ class DarhisperInterface(QMainWindow):
         btn_row.addWidget(save_btn)
         
         output_layout.addLayout(btn_row)
-        layout.addWidget(output_group)
+        layout.addWidget(output_group, 1)
         
     def select_file(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -803,7 +827,8 @@ class DarhisperInterface(QMainWindow):
         self.progress_bar.setValue(100)
         self.progress_label.setText("100%")
         
-    def change_file_model(self, model):
+    def change_file_model(self, index):
+        model = self.file_model_combo.itemData(index) or self.file_model_combo.itemText(index)
         self.app.file_transcription_model = model
         self.app.config["file_transcription_model"] = model
         self.app.save_config()
@@ -886,7 +911,7 @@ class DarhisperApp(QObject):
         self.config = self.load_config()
         self.gemini_key = self.config.get("gemini_api_key", "")
         self.active_prompt = self.config.get("active_prompt_key", "Transcripción Literal")
-        self.file_transcription_model = self.config.get("file_transcription_model", "gemini-2.0-flash")
+        self.file_transcription_model = self.config.get("file_transcription_model", "gemini-3-flash-preview")
         self.hotkey = self.deserialize_hotkey(self.config.get("hotkey", ["Key.ctrl_r"]))
         
         # Set Gemini client on worker

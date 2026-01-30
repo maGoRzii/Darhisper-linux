@@ -25,7 +25,7 @@ from PyQt6.QtWidgets import (QApplication, QSystemTrayIcon, QMenu, QWidget,
 from PyQt6.QtCore import (Qt, QTimer, QThread, pyqtSignal, QObject, 
                          QPoint, QRectF, QSize)
 from PyQt6.QtGui import (QPainter, QColor, QPainterPath, QPen, QIcon, 
-                        QAction, QBrush, QLinearGradient, QFont, QPalette)
+                        QAction, QBrush, QLinearGradient, QFont, QPalette, QPixmap)
 
 # Configure Logging
 logging.basicConfig(
@@ -513,6 +513,7 @@ class DarhisperInterface(QMainWindow):
         
     def setup_ui(self):
         self.setWindowTitle("🎙️ DARHISPER")
+        self.setWindowIcon(self.app.app_icon)
         self.resize(720, 850)
         self.setMinimumSize(600, 700)
         self.setStyleSheet("""
@@ -646,6 +647,14 @@ class DarhisperInterface(QMainWindow):
         layout.setContentsMargins(20, 20, 20, 20)
         
         # Header
+        logo_label = QLabel()
+        logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        if not self.app.app_icon.isNull():
+            logo_pixmap = self.app.app_icon.pixmap(96, 96)
+            if not logo_pixmap.isNull():
+                logo_label.setPixmap(logo_pixmap)
+        layout.addWidget(logo_label)
+
         header = QLabel("🎙️ DARHISPER")
         header.setStyleSheet("font-size: 24px; font-weight: bold; color: white;")
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -895,6 +904,10 @@ class DarhisperApp(QObject):
         super().__init__()
         self.qt_app = QApplication(sys.argv)
         self.qt_app.setQuitOnLastWindowClosed(False)
+
+        self.app_icon = self.load_app_icon()
+        if not self.app_icon.isNull():
+            self.qt_app.setWindowIcon(self.app_icon)
         
         # Components
         self.recorder = AudioRecorder()
@@ -961,6 +974,12 @@ class DarhisperApp(QObject):
         self.config["file_transcription_model"] = self.file_transcription_model
         with open(CONFIG_FILE, 'w') as f:
             json.dump(self.config, f)
+
+    def load_app_icon(self):
+        icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.png")
+        if os.path.exists(icon_path):
+            return QIcon(icon_path)
+        return QIcon()
 
     def serialize_hotkey(self, keys):
         serialized = []

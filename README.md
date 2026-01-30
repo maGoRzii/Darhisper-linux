@@ -12,9 +12,11 @@
 ## ✨ Características Principales
 
 *   **⚡️ Velocidad Ultrarrapida (Local)**: Utiliza el motor **NVIDIA NeMo** con el modelo **Parakeet-TDT (0.6B)**, ofreciendo transcripción en tiempo real y privacidad total.
-*   **☁️ Potencia en la Nube (Opcional)**: Integración con **Google Gemini 1.5 Flash** para "Smart Prompts" (corrección de estilo, resúmenes, emails, etc.).
+*   **☁️ Potencia en la Nube (Opcional)**: Integración con **Gemini 3 Flash Preview** para "Smart Prompts" (corrección de estilo, resúmenes, emails, etc.).
 *   **🎨 Diseño Elegante**: Feedback visual moderno (Overlay flotante) y sonoro (Beeps de confirmación).
 *   **⌨️ Push-to-Talk**: Mantén presionado `Control Derecho` (configurable) y habla. El texto se escribe mágicamente al soltar.
+*   **📁 Transcripción de Archivos**: Sube audios (mp3, wav, m4a, ogg, flac) y recibe el texto en la interfaz.
+*   **🪟 Ventana Redimensionable**: La interfaz se puede cambiar de tamaño desde las esquinas sin romper el layout.
 *   **🐧 Linux Nativo**: Integración perfecta con escritorios Linux (Gnome, Cinnamon, KDE).
 
 ---
@@ -53,9 +55,6 @@
     ./start.sh
     ```
 
-    ./start.sh
-    ```
-
 5.  **Crear acceso directo (Opcional)**:
     Para abrir la app desde el menú de aplicaciones sin terminal:
     ```bash
@@ -82,6 +81,13 @@ Haz clic en el icono 🎙️ de la barra de tareas (Tray Icon) para:
 *   **Lista de Tareas**: Formatea lo dictado como viñetas de una lista.
 *   **Email Profesional**: Reescribe lo dictado con tono formal y estructura de correo.
 *   **Modo Excel**: Formatea números y datos para hojas de cálculo.
+
+### Transcripción de Archivos
+1.  Abre la interfaz desde el icono de bandeja y selecciona **"Elegir Archivo..."**.
+2.  Elige el audio y pulsa **"COMENZAR TRANSCRIPCIÓN"**.
+3.  El progreso se muestra en la barra y el resultado aparece en el área de texto.
+
+**Modelo de archivo (API)**: Solo se usa **Gemini 3 Flash Preview**. No hay otros modelos configurables.
 
 #### 🔐 Configurar API Keys
 *   Ve a la opción `Configurar API Key` para introducir tu clave de Google Gemini si deseas usar los modos inteligentes.

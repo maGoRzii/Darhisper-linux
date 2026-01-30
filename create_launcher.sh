@@ -21,6 +21,11 @@ EOF
 # Permisos
 chmod +x "$DESKTOP_FILE"
 
+# Actualizar cache de lanzadores
+if command -v update-desktop-database >/dev/null 2>&1; then
+  update-desktop-database "$HOME/.local/share/applications" >/dev/null 2>&1
+fi
+
 # Notificar
 echo "✅ Lanzador creado exitosamente!"
 echo "📍 Ubicación: $DESKTOP_FILE"
